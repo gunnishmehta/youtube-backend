@@ -153,10 +153,6 @@ export const logoutUser = asyncHandler(async (req, res) => {
 })
 
 export const refreshAccessToken = asyncHandler(async(req, res)=>{
-    // get refresh token from cookies
-    // get refresh token from database and check if they are same
-    // if yes, generate new access token and refresh token
-    // update refresh token in database
 
     const incomingRefreshToken = req.cookie.REFRESH_TOKEN || req.body.REFRESH_TOKEN;
 
