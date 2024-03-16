@@ -11,6 +11,7 @@ const generateAccessAndRefreshToken = async (userId) => {
         const user = await User.findById(userId);
         const accessToken = await user.generateAccessToken();
         const refreshToken = await user.generateRefreshToken();
+        console.log(accessToken, refreshToken)
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
@@ -127,11 +128,11 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-
+    
     await User.findByIdAndUpdate(req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1 // this removes the field from document
             }
         },
         {
@@ -154,8 +155,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-
-    const incomingRefreshToken = req.cookie.REFRESH_TOKEN || req.body.REFRESH_TOKEN;
+    
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "Unauthorized access")
@@ -179,8 +180,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             secure: true
         }
 
-        const { accessToken, newRefreshToken } = await generateAccessAndRefreshToken();
-
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user?._id);
 
         return res
             .status(200)
